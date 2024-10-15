@@ -7,7 +7,7 @@ def load_tasks(filename):
             return json.load(file)
     except FileNotFoundError:
         print(f"{filename} is not found. New file will be created when you add your first task")
-        return deque()
+        return []
 def add_task (tasks):
     while True:
         print("\nPrint /close to exit")
@@ -19,11 +19,29 @@ def add_task (tasks):
             print(f"Task '{task_input}' is successfully added!\n")
             break
         else:
-            print("Task can't be empty")
+            print("Task can't be empty\n")
 def update_task(tasks):
-    pass
+    while True:
+        print("Update menu: ")
+        get_tasks(tasks)
+        print("Print /close to exit")
+        task_index = input('Choose number of task to update : ')
+        if check_for_close(task_index):
+            break
+        task_index = is_valid_index(task_index, tasks)
+        if task_index == None:
+            continue
+        print(f'Changing: {tasks[task_index]['task']}')
+        new_task = input("New task: ")
+        if new_task.strip():
+            tasks[task_index]['task'] = new_task
+            print('Changes applyed\n')
+            break
+        else:
+            print("Task cant be empty\n")
 def delete_task (tasks):
     while True:
+        print("Delete menu: ")
         get_tasks(tasks)
         print("Print /close to exit")
         index_for_delete = input("Write index of task to delete : ")
@@ -47,7 +65,7 @@ def delete_task (tasks):
 def get_tasks (tasks):
     print("Your tasks: ")
     if not tasks:
-        print("Your task list is empty")
+        print("Your task list is empty\n")
     else:
         for j, task in enumerate(tasks, 1):
             status = "completed" if task['completed'] == True else "uncompleted"
@@ -108,11 +126,13 @@ def main():
         try:
             print("\n1. Show task list")
             print("2. Add task")
-            print("3. Delete task")
-            print("4. Change task's status")
-            print("5. Close app\n")
+            if tasks:
+                print("3. Update task")
+                print("4. Delete task")
+                print("5. Change task's status")
+            print("6. Exit and save changes\n")
             choice = input("Choose number of option : ").strip()
-            if choice == '5':# Close procedure
+            if choice == '6':# Close procedure
                 while True:
                     user_acceptance = confirm_action(input("\nExiting programm Y/N: ").strip().lower())
                     if user_acceptance:
@@ -131,10 +151,13 @@ def main():
             elif choice == '2': #Add task procedure
                 add_task(tasks)
                 input("Press enter to continue...")
-            elif choice == '3':#Delete task procedure
+            elif choice == '3' and tasks:  # Update task procedure
+                update_task(tasks)
+                input("Press enter to continue...")
+            elif choice == '4' and tasks:#Delete task procedure
                 delete_task(tasks)
                 input("Press enter to continue...")
-            elif choice == '4':
+            elif choice == '5' and tasks:
                 toggle_task_completion(tasks)
                 input("Press enter to continue...")
             else:
