@@ -1,5 +1,5 @@
 import json
-from collections import deque
+import uuid
 
 def load_tasks(filename):
     try:
@@ -15,7 +15,8 @@ def add_task (tasks):
         if check_for_close(task_input):
             break
         if task_input.strip():
-            tasks.append({'task':task_input, 'completed':False})
+            new_id = str(uuid.uuid4())
+            tasks.append({'id': new_id,'task':task_input, 'status':"To Do"})
             print(f"Task '{task_input}' is successfully added!\n")
             break
         else:
@@ -23,18 +24,18 @@ def add_task (tasks):
 def update_task(tasks):
     while True:
         print("Update menu: ")
-        get_tasks(tasks)
+        get_all_tasks(tasks)
         print("Print /close to exit")
-        task_index = input('Choose number of task to update : ')
+        task_index = input('Choose index of task to update : ')
         if check_for_close(task_index):
             break
         task_index = is_valid_index(task_index, tasks)
         if task_index == None:
             continue
-        print(f'Changing: {tasks[task_index]['task']}')
+        print(f'Changing: {tasks[task_index-1]['task']}')
         new_task = input("New task: ")
         if new_task.strip():
-            tasks[task_index]['task'] = new_task
+            tasks[task_index-1]['task'] = new_task
             print('Changes applyed\n')
             break
         else:
@@ -42,7 +43,7 @@ def update_task(tasks):
 def delete_task (tasks):
     while True:
         print("Delete menu: ")
-        get_tasks(tasks)
+        get_all_tasks(tasks)
         print("Print /close to exit")
         index_for_delete = input("Write index of task to delete : ")
         if check_for_close(index_for_delete):
@@ -51,9 +52,9 @@ def delete_task (tasks):
         if index_for_delete == None:
             continue
         while True:
-            user_acceptance = confirm_action(input(f"Delete {index_for_delete+1}. {tasks[index_for_delete]['task']} ? Y/N : ").strip().lower())
+            user_acceptance = confirm_action(input(f"Delete {index_for_delete}. {tasks[index_for_delete-1]['task']} ? Y/N : ").strip().lower())
             if user_acceptance:
-                removed_task = tasks.pop(index_for_delete)
+                removed_task = tasks.pop(index_for_delete-1)
                 print(f"Task '{removed_task['task']}' is deleted successfully!\n")
                 break
             elif user_acceptance == False:
@@ -62,14 +63,13 @@ def delete_task (tasks):
             elif user_acceptance == None:
                 continue
         break
-def get_tasks (tasks):
+def get_all_tasks (tasks):
     print("Your tasks: ")
     if not tasks:
         print("Your task list is empty\n")
-    else:
-        for j, task in enumerate(tasks, 1):
-            status = "completed" if task['completed'] == True else "uncompleted"
-            print(f"{j}. {task['task']} [{status}]")
+        return None
+    for j, task in enumerate(tasks, 1):
+        print(f"{j}.  | id: {task['id']} | Task: '{task['task']}' | Status: '{task['status']}'")
 def save_tasks(tasks, filename):
     print("Saving list ...")
     with open(filename, "w") as file:
@@ -77,7 +77,7 @@ def save_tasks(tasks, filename):
     print("List is saved.")
 def toggle_task_completion(tasks):
     while True:
-        get_tasks(tasks)
+        get_all_tasks(tasks)
         print("\nPrint /close to exit")
         index_for_changing = input("Print task's index to change status : ")
         if check_for_close(index_for_changing):
@@ -85,14 +85,35 @@ def toggle_task_completion(tasks):
         index_for_changing = is_valid_index(index_for_changing, tasks)
         if index_for_changing == None:
             continue
-        if tasks[index_for_changing]['completed']:
-            tasks[index_for_changing]['completed'] = False
-            print(f"Now '{tasks[index_for_changing]['task']}' is uncompleted")
+        index_for_changing-=1
+        while True:
+            print(f"Changing '{tasks[index_for_changing]['task']}' status. \nChoose option : \n"
+                  f"1 - To Do\n2 - In-Progress\n3 - Done")
+            new_status = input('Your option : ')
+            if check_for_close(new_status):
+                break
+            try:
+                new_status = int(new_status)
+            except ValueError:
+                print("Wrong input type")
+                continue
+            if new_status == 1:
+                tasks[index_for_changing]['status'] = "To Do"
+                print(f"Task '{tasks[index_for_changing]['task']}' ")
+                print(f"New status : {tasks[index_for_changing]['status']}")
+            elif new_status == 2:
+                tasks[index_for_changing]['status'] = "In-Progress"
+                print(f"Task '{tasks[index_for_changing]['task']}' ")
+                print(f"New status : {tasks[index_for_changing]['status']}")
+            elif new_status == 3:
+                tasks[index_for_changing]['status'] = "Done"
+                print(f"Task '{tasks[index_for_changing]['task']}' ")
+                print(f"New status : {tasks[index_for_changing]['status']}")
+            else:
+                print("ERROR: Wrong option index")
+                continue
             break
-        else:
-            tasks[index_for_changing]['completed'] = True
-            print(f"Now '{tasks[index_for_changing]['task']}' is completed")
-            break
+        break
 def check_for_close(checkable_input):
     if checkable_input.strip().lower() == "/close":
         print("Exiting process...")
@@ -100,11 +121,11 @@ def check_for_close(checkable_input):
     return False
 def is_valid_index(index, tasks):
     try:
-        index = int(index)-1
+        index = int(index)
     except ValueError:
         print("ERROR: Wrong value")
         return None
-    if 0<=index<len(tasks):
+    if 0<index<=len(tasks):
         return index
     else:
         print("ERROR: Index is out of range")
@@ -146,7 +167,7 @@ def main():
                 if user_acceptance:
                     break
             elif choice == '1':#Get tasks
-                get_tasks(tasks)
+                get_all_tasks(tasks)
                 input("Press enter to continue ...")  ################################################
             elif choice == '2': #Add task procedure
                 add_task(tasks)

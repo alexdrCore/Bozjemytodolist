@@ -1,10 +1,17 @@
 [
     {
+        "id": "e8012d2c-c8f6-4e4e-9b17-5a2253d9cdf1",
         "task": "Hello!",
-        "completed": true
+        "status": "To Do"
     },
     {
+        "id": "b8774c3e-d2e0-43be-9f8d-cd9370dc4682",
         "task": "My name is Alex",
-        "completed": true
+        "status": "To Do"
+    },
+    {
+        "id": "98ee1639-74bf-48ed-97f1-01e09e87f744",
+        "task": "No, my name is Alkek",
+        "status": "Done"
     }
 ]
