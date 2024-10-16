@@ -1,5 +1,7 @@
 import json
 import uuid
+from datetime import datetime
+
 
 def load_tasks(filename):
     try:
@@ -16,7 +18,8 @@ def add_task (tasks):
             break
         if task_input.strip():
             new_id = str(uuid.uuid4())
-            tasks.append({'id': new_id,'task':task_input, 'status':"To Do"})
+            current_date = datetime.now()
+            tasks.append({'id': new_id,'task':task_input, 'status':"To Do", 'createdAt':current_date.strftime("%Y-%m-%d")})
             print(f"Task '{task_input}' is successfully added!\n")
             break
         else:
@@ -69,7 +72,7 @@ def get_all_tasks (tasks):
         print("Your task list is empty\n")
         return None
     for j, task in enumerate(tasks, 1):
-        print(f"{j}.  | id: {task['id']} | Task: '{task['task']}' | Status: '{task['status']}'")
+        print(f"{j}.  | id: {task['id']} | Task: '{task['task']}' | Status: '{task['status']}' | Created At: {task['createdAt']}")
 def save_tasks(tasks, filename):
     print("Saving list ...")
     with open(filename, "w") as file:
