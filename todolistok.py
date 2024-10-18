@@ -2,7 +2,6 @@ import json
 import uuid
 from datetime import datetime
 
-
 def load_tasks(filename):
     try:
         with open(filename, "r") as file:
@@ -19,7 +18,7 @@ def add_task (tasks):
         if task_input.strip():
             new_id = str(uuid.uuid4())
             current_date = datetime.now()
-            tasks.append({'id': new_id,'task':task_input, 'status':"To Do", 'createdAt':current_date.strftime("%Y-%m-%d")})
+            tasks.append({'id': new_id,'task':task_input, 'status':"To Do", 'createdAt':current_date.isoformat(), 'updatedAt':current_date.strftime("%Y-%m-%d")})
             print(f"Task '{task_input}' is successfully added!\n")
             break
         else:
@@ -27,7 +26,7 @@ def add_task (tasks):
 def update_task(tasks):
     while True:
         print("Update menu: ")
-        get_all_tasks(tasks)
+        get_tasks(tasks)
         print("Print /close to exit")
         task_index = input('Choose index of task to update : ')
         if check_for_close(task_index):
@@ -38,7 +37,9 @@ def update_task(tasks):
         print(f'Changing: {tasks[task_index-1]['task']}')
         new_task = input("New task: ")
         if new_task.strip():
+            current_date = datetime.now()
             tasks[task_index-1]['task'] = new_task
+            tasks[task_index-1]['updatedAt'] = current_date.isoformat()
             print('Changes applyed\n')
             break
         else:
@@ -46,7 +47,7 @@ def update_task(tasks):
 def delete_task (tasks):
     while True:
         print("Delete menu: ")
-        get_all_tasks(tasks)
+        get_tasks(tasks)
         print("Print /close to exit")
         index_for_delete = input("Write index of task to delete : ")
         if check_for_close(index_for_delete):
@@ -66,13 +67,45 @@ def delete_task (tasks):
             elif user_acceptance == None:
                 continue
         break
-def get_all_tasks (tasks):
-    print("Your tasks: ")
-    if not tasks:
+def get_tasks(tasks, status = False):
+    if not tasks :
         print("Your task list is empty\n")
         return None
-    for j, task in enumerate(tasks, 1):
-        print(f"{j}.  | id: {task['id']} | Task: '{task['task']}' | Status: '{task['status']}' | Created At: {task['createdAt']}")
+    if status:
+        counter = 1
+        was_something = False
+        for task in tasks:
+            if task['status'] == status:
+                print(f"{counter}.  | id: {task['id']} | Task: '{task['task']}' | Status: '{task['status']}' | Created At: {task['createdAt']} | Updated at : {task['updatedAt']}")
+                was_something = True
+            counter+=1
+        if was_something == False:
+            print(f"No {status} tasks in list")
+    else:
+        for j, task in enumerate(tasks, 1):
+            print(f"{j}.  | id: {task['id']} | Task: '{task['task']}' | Status: '{task['status']}' | Created At: {task['createdAt']} | Updated at : {task['updatedAt']}")
+def show_tasks (tasks):
+    print("Your tasks: ")
+    get_tasks(tasks)
+    while True:
+        print("\nShow : \n1 - All To Do tasks\n2 - All In-Progress tasks\n3 - All Done tasks\n4 - Exit list\n")
+        try:
+            choosed_option =  int(input("Option : "))
+        except ValueError:
+            print("ERROR : Wrong value input")
+            continue
+        if choosed_option == 1:
+            get_tasks(tasks, status="To Do")
+        elif choosed_option == 2:
+            get_tasks(tasks, status="In-Progress")
+        elif choosed_option == 3:
+            get_tasks(tasks, status="Done")
+        elif choosed_option == 4:
+            print("Closing lists...")
+            break
+        else:
+            print("ERROR : No such option ")
+            continue
 def save_tasks(tasks, filename):
     print("Saving list ...")
     with open(filename, "w") as file:
@@ -80,7 +113,7 @@ def save_tasks(tasks, filename):
     print("List is saved.")
 def toggle_task_completion(tasks):
     while True:
-        get_all_tasks(tasks)
+        get_tasks(tasks)
         print("\nPrint /close to exit")
         index_for_changing = input("Print task's index to change status : ")
         if check_for_close(index_for_changing):
@@ -115,6 +148,8 @@ def toggle_task_completion(tasks):
             else:
                 print("ERROR: Wrong option index")
                 continue
+            current_date = datetime.now()
+            tasks[index_for_changing]['updatedAt'] = current_date.isoformat()
             break
         break
 def check_for_close(checkable_input):
@@ -148,7 +183,7 @@ def main():
     print("Welcome to To-Do List!\n")
     while True:
         try:
-            print("\n1. Show task list")
+            print("\n1. Show tasks")
             print("2. Add task")
             if tasks:
                 print("3. Update task")
@@ -170,7 +205,7 @@ def main():
                 if user_acceptance:
                     break
             elif choice == '1':#Get tasks
-                get_all_tasks(tasks)
+                show_tasks(tasks)
                 input("Press enter to continue ...")  ################################################
             elif choice == '2': #Add task procedure
                 add_task(tasks)
